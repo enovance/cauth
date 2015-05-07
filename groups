@@ -1,3 +1,4 @@
-# UUID                                  	Group Name
-#
-06602f8d7dab1f0154909095bd251f24035f5149	cauth-ptl
+# UUID          Group Name
+9562193e1f1647ee1c2004b4fb7996e84ae7e717 	Non-Interactive Users
+7b68cc7964b5b7c24b45abe687dcbbfe8fd281d9       	cauth-core
+06602f8d7dab1f0154909095bd251f24035f5149        	cauth-ptl
