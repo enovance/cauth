@@ -82,6 +82,10 @@ class dummy_conf():
                                      "userpass", "$6$EFeaxATWohJ")
                              }
                          },
+                      'localdb':
+                        {
+                            "managesf_url": "http://tests.dom",
+                        },
                      }
         self.sqlalchemy = {'url': 'sqlite:///%s' % tempfile.mkstemp()[1],
                            'echo': False,
@@ -142,9 +146,12 @@ class FunctionalTest(TestCase):
 
 
 class FakeResponse():
-    def __init__(self, code, content=None):
+    def __init__(self, code, content=None, is_json = False):
         self.status_code = code
         self.content = content
+        self.json = {}
+        if is_json and content:
+            self.json = json.loads(content)
 
 
 class TestUserDetails(TestCase):
@@ -276,6 +283,22 @@ class TestLoginController(TestCase):
         ret = lc.check_valid_user('user1', 'badpass')
         self.assertEqual(None, ret)
 
+    def test_check_localdb_user(self):
+        lc = root.LoginController()
+        with patch('requests.get') as g:
+            _response = {'username': 'les',
+                         'fullname': 'Les Claypool',
+                         'email': 'les@primus.com',
+                         'sshkey': 'Jerry was a race car driver'}
+            g.return_value = FakeResponse(200, json.dumps(_response), True)
+            ret = lc.check_valid_user('les', 'Wynona')
+            self.assertIn('Les Claypool', ret)
+            self.assertIn('les@primus.com', ret)
+            self.assertIn(['Jerry was a race car driver', ], ret)
+        with patch('requests.get') as g:
+            g.return_value = FakeResponse(401, 'Unauthorized')
+            ret = lc.check_valid_user('bootsy', 'collins')
+            self.assertEqual(None, ret)
 
 @httmock.urlmatch(netloc=r'(.*\.)?github\.com$')
 def githubmock_request(url, request):
