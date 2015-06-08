@@ -16,9 +16,12 @@ from unittest import TestCase
 from mock import patch, Mock, ANY
 from M2Crypto import RSA, BIO
 
-from cauth.controllers.userdetails import Gerrit
+from cauth.backends import githubauth
+
+from cauth.utils.userdetails import Gerrit
 from cauth.controllers import root
 from cauth.model import db
+from cauth.utils import common
 
 from webtest import TestApp
 from pecan import load_app
@@ -187,7 +190,7 @@ class TestUserDetails(TestCase):
         ger = Gerrit(self.conf)
         self.key_amount_added = 0
         keys = [{'key': 'k1'}, {'key': 'k2'}]
-        with patch('cauth.controllers.userdetails.requests') as r:
+        with patch('cauth.utils.userdetails.requests') as r:
             r.post = self.gerrit_add_sshkeys_mock
             ger.install_sshkeys('john', keys)
         self.assertEqual(self.key_amount_added, len(keys))
@@ -212,24 +215,24 @@ class TestUserDetails(TestCase):
                     raise Exception
 
         ger = Gerrit(self.conf)
-        with patch('cauth.controllers.userdetails.MySQLdb') as m:
+        with patch('cauth.utils.userdetails.MySQLdb') as m:
             m.connect = lambda *args, **kwargs: FakeDB()
             ret = ger.add_in_acc_external(42, 'john')
         self.assertEqual(True, ret)
-        with patch('cauth.controllers.userdetails.MySQLdb') as m:
+        with patch('cauth.utils.userdetails.MySQLdb') as m:
             m.connect = lambda *args, **kwargs: FakeDB(False)
             ret = ger.add_in_acc_external(42, 'john')
         self.assertEqual(False, ret)
 
     def test_create_gerrit_user(self):
         ger = Gerrit(self.conf)
-        with patch('cauth.controllers.userdetails.requests') as r:
+        with patch('cauth.utils.userdetails.requests') as r:
             r.put = lambda *args, **kwargs: None
             r.get = self.gerrit_get_account_id_mock
             ger.add_in_acc_external = Mock()
             ger.create_gerrit_user('john', 'john@tests.dom', 'John Doe', [])
             self.assertEqual(True, ger.add_in_acc_external.called)
-        with patch('cauth.controllers.userdetails.requests') as r:
+        with patch('cauth.utils.userdetails.requests') as r:
             r.put = lambda *args, **kwargs: None
             r.get = self.gerrit_get_account_id_mock2
             ger.add_in_acc_external = Mock()
@@ -249,12 +252,12 @@ class TestControllerRoot(TestCase):
         pass
 
     def test_signature(self):
-        self.assertIsNot(None, root.signature('data'))
+        self.assertIsNot(None, common.signature('data'))
 
     def test_pre_register_user(self):
-        p = 'cauth.controllers.root.userdetails.UserDetailsCreator.create_user'
+        p = 'cauth.utils.userdetails.UserDetailsCreator.create_user'
         with patch(p) as cu:
-            root.pre_register_user('john')
+            common.pre_register_user('john')
             cu.assert_called_once_with(
                 'john',
                 'john@%s' % self.conf.app['cookie_domain'],
@@ -262,10 +265,10 @@ class TestControllerRoot(TestCase):
                 None)
 
     def test_create_ticket(self):
-        with patch('cauth.controllers.root.signature') as sign:
+        with patch('cauth.utils.common.signature') as sign:
             sign.return_value = '123'
             self.assertEqual('a=arg1;b=arg2;sig=123',
-                             root.create_ticket(a='arg1', b='arg2'))
+                             common.create_ticket(a='arg1', b='arg2'))
 
 
 class TestLoginController(TestCase):
@@ -360,7 +363,7 @@ class TestPersonalAccessTokenGithubController(TestCase):
     def setupClass(cls):
         cls.conf = dummy_conf()
         gen_rsa_key()
-        root.conf = cls.conf
+        githubauth.conf = cls.conf
 
     @classmethod
     def tearDownClass(cls):
@@ -368,22 +371,22 @@ class TestPersonalAccessTokenGithubController(TestCase):
 
     def test_authenticate(self):
         with httmock.HTTMock(githubmock_request):
-            root.setup_response = Mock()
-            gc = root.PersonalAccessTokenGithubController()
+            common.setup_response = Mock()
+            gc = githubauth.PersonalAccessTokenGithubController()
             gc.organization_allowed = lambda token: True
             gc.index(back='/r/', token='user6_token')
-            root.setup_response.assert_called_once_with(
+            common.setup_response.assert_called_once_with(
                 'user6', '/r/', 'user6@tests.dom', 'Demo user6', {'key': ''})
 
         with httmock.HTTMock(githubmock_request):
-            gc = root.PersonalAccessTokenGithubController()
+            gc = githubauth.PersonalAccessTokenGithubController()
             gc.organization_allowed = lambda token: False
             self.assertRaises(HTTPUnauthorized,
                               gc.index, back='/r/', token='bad_token')
 
     @patch('requests.get')
     def test_organization_allowed(self, mocked_get):
-        gc = root.PersonalAccessTokenGithubController()
+        gc = githubauth.PersonalAccessTokenGithubController()
         mocked_get.return_value.json.return_value = [{'login': 'acme'}]
 
         # allowed_organizations not set -> allowed
@@ -413,7 +416,7 @@ class TestGithubController(TestCase):
     def setupClass(cls):
         cls.conf = dummy_conf()
         gen_rsa_key()
-        root.conf = cls.conf
+        githubauth.conf = cls.conf
 
     @classmethod
     def tearDownClass(cls):
@@ -421,30 +424,30 @@ class TestGithubController(TestCase):
 
     def test_get_access_token(self):
         with httmock.HTTMock(githubmock_request):
-            gc = root.GithubController()
+            gc = githubauth.GithubController()
             self.assertEqual('user6_token',
                              gc.get_access_token('user6_code'))
 
     def test_callback(self):
         with httmock.HTTMock(githubmock_request):
             db.get_url = Mock(return_value='/r/')
-            root.setup_response = Mock()
-            gc = root.GithubController()
+            common.setup_response = Mock()
+            gc = githubauth.GithubController()
             gc.organization_allowed = lambda login: True
             gc.callback(state='stateXYZ', code='user6_code')
-            root.setup_response.assert_called_once_with(
+            common.setup_response.assert_called_once_with(
                 'user6', '/r/', 'user6@tests.dom', 'Demo user6', {'key': ''})
 
         with httmock.HTTMock(githubmock_request):
             db.get_url = Mock(return_value='/r/')
-            gc = root.GithubController()
+            gc = githubauth.GithubController()
             gc.organization_allowed = lambda login: False
             self.assertRaises(HTTPUnauthorized,
                               gc.callback, state='stateXYZ', code='user6_code')
 
     @patch('requests.get')
     def test_organization_allowed(self, mocked_get):
-        gc = root.GithubController()
+        gc = githubauth.GithubController()
         mocked_get.return_value.json.return_value = [{'login': 'acme'}]
 
         # allowed_organizations not set -> allowed
@@ -479,7 +482,7 @@ class TestCauthApp(FunctionalTest):
     def test_post_login(self):
         # Ldap and Gitub Oauth backend are mocked automatically
         # if the domain is tests.dom
-        with patch('cauth.controllers.root.userdetails'):
+        with patch('cauth.utils.userdetails.requests'):
             response = self.app.post('/login', params={'username': 'user1',
                                                        'password': 'userpass',
                                                        'back': 'r/'})
@@ -488,7 +491,7 @@ class TestCauthApp(FunctionalTest):
         self.assertIn('Set-Cookie', response.headers)
         with patch('requests.get'):
             # baduser is not known from the mocked backend
-            with patch('cauth.controllers.root.userdetails'):
+            with patch('cauth.utils.userdetails'):
                 response = self.app.post('/login',
                                          params={'username': 'baduser',
                                                  'password': 'userpass',
@@ -497,14 +500,14 @@ class TestCauthApp(FunctionalTest):
             self.assertEqual(response.status_int, 401)
 
             # Try with no creds
-            with patch('cauth.controllers.root.userdetails'):
+            with patch('cauth.utils.userdetails'):
                 response = self.app.post('/login', params={'back': 'r/'},
                                          status="*")
             self.assertEqual(response.status_int, 401)
 
     def test_github_login(self):
         with httmock.HTTMock(githubmock_request):
-            with patch('cauth.controllers.root.userdetails'):
+            with patch('cauth.utils.userdetails'):
                 response = self.app.get('/login/github/index',
                                         params={'username': 'user6',
                                                 'back': 'r/',
