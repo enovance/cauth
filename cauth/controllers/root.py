@@ -33,8 +33,8 @@ from pecan.rest import RestController
 from cauth.model import db
 from cauth.controllers import userdetails
 
-LOGOUT_MSG = "You have been successfully logged " \
-             "out of all the Software factory services."
+# TODO(mhu) This should be in the app config, and i18n'zed
+LOGOUT_MSG = "You have been successfully logged out of all the services."
 
 logger = logging.getLogger(__name__)
 
