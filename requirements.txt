@@ -11,3 +11,4 @@ MySQL-python
 requests>=2.7.0
 pygerrit
 python-redmine
+stevedore
