@@ -19,12 +19,9 @@ import logging
 from pecan import expose, response, conf
 from pecan.rest import RestController
 
-from cauth import auth
 from cauth.controllers import base, github
+from cauth.utils.common import LOGOUT_MSG
 
-
-LOGOUT_MSG = "You have been successfully logged " \
-             "out of all the Software factory services."
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +35,6 @@ class LogoutController(RestController):
 
 class RootController(object):
     login = base.BaseLoginController()
-    login.register(auth.check_static_user)
-    login.register(auth.check_db_user)
-    login.register(auth.check_ldap_user)
-
     login.github = github.GithubController()
     login.githubAPIkey = github.PersonalAccessTokenGithubController()
 
