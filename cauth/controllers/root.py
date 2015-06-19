@@ -19,7 +19,6 @@ import logging
 from pecan import expose, response, conf
 from pecan.rest import RestController
 
-from cauth import auth
 from cauth.controllers import base, github
 
 
@@ -38,10 +37,6 @@ class LogoutController(RestController):
 
 class RootController(object):
     login = base.BaseLoginController()
-    login.register(auth.check_static_user)
-    login.register(auth.check_db_user)
-    login.register(auth.check_ldap_user)
-
     login.github = github.GithubController()
     login.githubAPIkey = github.PersonalAccessTokenGithubController()
 
