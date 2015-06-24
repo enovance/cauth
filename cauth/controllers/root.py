@@ -21,6 +21,7 @@ from pecan.rest import RestController
 
 from cauth.controllers import base, github
 from cauth.utils.common import LOGOUT_MSG
+from cauth.utils import userdetails
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ class LogoutController(RestController):
     @expose(template='login.html')
     def get(self, **kwargs):
         response.delete_cookie('auth_pubtkt', domain=conf.app.cookie_domain)
+        udc = userdetails.UserDetailsCreator(conf)
+        udc.logout_user()
         return dict(back='/', message=LOGOUT_MSG)
 
 

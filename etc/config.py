@@ -77,15 +77,8 @@ auth = {
     }
 }
 
-logout = {
-    'services': ['redmine', 'gerrit', 'cauth'],
-    'gerrit': {
-        'url': '/r/logout'
-    },
-    'redmine': {
-        'url': '/redmine/logout'
-    }
-}
+services = ['redmine', 'gerrit']
+
 
 sqlalchemy = {
     'url': 'sqlite:////var/lib/cauth/state_mapping.db',
