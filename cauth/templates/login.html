@@ -1,31 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Sample login page</title>
-    </head>
-    <body>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">Login with cauth</h3>
-            </div>
-            <h5>${message}</h5>
-            <div class="panel-body">
-                <form method="post" action="/auth/login/" target="_top">
-                    <div>
-                        <label for="username">Username</label>
-                        <input name="username" id="username" type="text" value="" placeholder="Username" required autofocus>
-                    </div>
-                    <div>
-                        <label for="username">Password</label>
-                        <input name="password" id="password" type="password" placeholder="Password" required>
-                    </div>
-                    <input type="hidden" name="back" value="${back}">
+  <head>
+    <meta charset="utf-8">
+    <title>Sample login page</title>
+  </head>
+  <body>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Login with cauth</h3>
+      </div>
+      <h5>${message}</h5>
+      <div class="panel-body">
+          <div id="result">
+          </div>
+          <form method="post" action="/auth/login/" target="_top" id="login_form">
+              <div>
+                  <label for="username">Username</label>
+                  <input name="args[username]" id="username" type="text" value="" placeholder="Username" required autofocus>
+              </div>
+              <div>
+                  <label for="username">Password</label>
+                  <input name="args[password]" id="password" type="password" placeholder="Password" required>
+              </div>
+              <input type="hidden" name="back" value="${back}">
+              <input type="hidden" name="method" value="Password">
+              <button type="submit">Log in</button>
+          </form>
+      </div>
+    </div>
+    <form method="post" name="HiddenGithubForm" action="/auth/login/" target="_top" id="github_form">
+      <input type="hidden" name="back" value="${back}">
+      <input type="hidden" name="method" value="Github">
+    </form>
+    Or <a href='#' onClick="document.myForm.submit();return false" target="_top">Login via Github</a>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript">
+      $("#login_form").submit( function( ev ) {
+          ev.preventDefault();
+          var $form = $(this);
+          var url = $form.attr("action");
+          var data = {
+              username: $form.find("input[name='username']").val(),
+              password: $form.find("input[name='password']").val(),
+              back: $form.find("input[name='back']").val(),
+              method: $form.find("input[name='method']").val();
+          };
 
-                    <button type="submit">Log in</button>
-                </form>
-            </div>
-        </div>
-        Or <a href='/auth/login/github?back=${back}' target="_top">Login via Github</a>
-    </body>
+          var posting = $.post( url, data );
+          posting.done( function (reply) {
+              var content = $(reply).find("#content");
+              $("#result").empty().append(content);
+          });
+      });
+    </script>
+  </body>
 </html>
