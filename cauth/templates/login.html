@@ -11,21 +11,25 @@
             </div>
             <h5>${message}</h5>
             <div class="panel-body">
-                <form method="post" action="/auth/login/" target="_top">
+                <form method="post" action="/auth/login/" target="_top" enctype='application/json'>
                     <div>
                         <label for="username">Username</label>
-                        <input name="username" id="username" type="text" value="" placeholder="Username" required autofocus>
+                        <input name="args[username]" id="username" type="text" value="" placeholder="Username" required autofocus>
                     </div>
                     <div>
                         <label for="username">Password</label>
-                        <input name="password" id="password" type="password" placeholder="Password" required>
+                        <input name="args[password]" id="password" type="password" placeholder="Password" required>
                     </div>
                     <input type="hidden" name="back" value="${back}">
-
+                    <input type="hidden" name="method" value="Password">
                     <button type="submit">Log in</button>
                 </form>
             </div>
         </div>
-        Or <a href='/auth/login/github?back=${back}' target="_top">Login via Github</a>
+        <form method="post" name="HiddenGithubForm" action="/auth/login/" target="_top" enctype='application/json'>
+            <input type="hidden" name="back" value="${back}">
+            <input type="hidden" name="method" value="Github">
+        </form>
+        Or <a href='#' onClick="document.myForm.submit();return false" target="_top">Login via Github</a>
     </body>
 </html>
