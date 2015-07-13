@@ -130,7 +130,10 @@ class dummy_conf():
                        "password": crypt.crypt("userpass",
                                                "$6$EFeaxATWohJ")}},
                      'localdb':
-                     {"managesf_url": "http://tests.dom", }, }
+                     {"managesf_url": "http://tests.dom", },
+                     'openid':
+                     {"redirect_uri": "auth/login/openid/callback",
+                      'auth_url': 'https://login.launchpad.net/+openid',}, }
         self.sqlalchemy = {'url': 'sqlite:///%s' % tempfile.mkstemp()[1],
                            'echo': False,
                            'encoding': 'utf-8',
