@@ -19,7 +19,8 @@ import logging
 from pecan import expose, response, conf
 from pecan.rest import RestController
 
-from cauth.controllers import base, github, introspection
+from cauth.auth import base as exceptions
+from cauth.controllers import base, github, introspection, openid
 from cauth.utils.common import LOGOUT_MSG
 
 
@@ -35,8 +36,15 @@ class LogoutController(RestController):
 
 class RootController(object):
     login = base.BaseLoginController()
-    login.github = github.GithubController()
-    login.githubAPIkey = github.PersonalAccessTokenGithubController()
+    try:
+        login.github = github.GithubController()
+        login.githubAPIkey = github.PersonalAccessTokenGithubController()
+    except exceptions.AuthProtocolNotAvailableError as e:
+        logger.error("%s - skipping callback endpoint" % e.message)
+    try:
+        login.openid = openid.OpenIDController()
+    except exceptions.AuthProtocolNotAvailableError as e:
+        logger.error("%s - skipping callback endpoint" % e.message)
     about = introspection.IntrospectionController()
 
     logout = LogoutController()
