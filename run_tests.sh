@@ -31,8 +31,7 @@ echo
 
 echo "cauth tests"
 echo "~~~~~~~~~~~~~"
-env SWIG_FEATURES="-cpperraswarn -includeall -D__`uname -m`__ -I/usr/include/openssl"
-(rm -Rf .tox; tox)
+(rm -Rf .tox;SWIG_FEATURES="-cpperraswarn -includeall -D__`uname -m`__ -I/usr/include/openssl"  tox)
 CAUTH_ERRORS=$?
 echo
 
