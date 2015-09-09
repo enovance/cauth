@@ -140,8 +140,9 @@ class TestCauthApp(FunctionalTest):
         # TODO(mhu) possible refactoring with previous function
         with patch('cauth.service.gerrit.requests'):
             with patch('requests.get'):
-                response = self.app.post_json('/login',
-                                              payload)
+                with patch('cauth.service.gerrit.json.dumps'):
+                    response = self.app.post_json('/login',
+                                                  payload)
         self.assertEqual(response.status_int, 303)
         self.assertEqual('http://localhost/r/', response.headers['Location'])
         self.assertIn('Set-Cookie', response.headers)
