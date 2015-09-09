@@ -138,13 +138,19 @@ class TestCauthApp(FunctionalTest):
                    'args': {'username': 'user1',
                             'password': 'userpass'}, }
         # TODO(mhu) possible refactoring with previous function
-        with patch('cauth.service.gerrit.requests'):
-            with patch('requests.get'):
-                response = self.app.post_json('/login',
-                                              payload)
+        with patch('cauth.service.gerrit.requests'), \
+             patch('requests.get'), \
+             patch('cauth.service.gerrit.json.dumps'), \
+             patch('cauth.service.redmine.RedmineUtils'):
+            response = self.app.post_json('/login',
+                                          payload)
         self.assertEqual(response.status_int, 303)
         self.assertEqual('http://localhost/r/', response.headers['Location'])
         self.assertIn('Set-Cookie', response.headers)
+        payload = {'method': 'Password',
+                   'back': 'r/',
+                   'args': {'username': 'baduser',
+                            'password': 'userpass'}, }
         with patch('requests.get'):
             # baduser is not known from the mocked backend
             with patch('cauth.utils.userdetails'):
