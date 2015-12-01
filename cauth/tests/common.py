@@ -124,6 +124,7 @@ def githubmock_request(url, request):
 
 class dummy_conf():
     def __init__(self):
+        self.managesf = {'url': 'http://managesf.tests.dom', }
         self.redmine = {'apikey': 'XXX',
                         'apihost': 'api-redmine.test.dom',
                         'apiurl': 'http://api-redmine.test.dom',

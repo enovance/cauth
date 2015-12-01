@@ -115,3 +115,7 @@ gerrit = {
     'db_user': 'gerrit_mysql_username',
     'db_password': 'gerrit_sql_pwd'
 }
+
+managesf = {
+    'url': 'http://managesf.url',
+}
