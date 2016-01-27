@@ -182,26 +182,6 @@ class TestCauthApp(FunctionalTest):
                                               status="*")
             self.assertEqual(response.status_int, 401)
 
-    def test_github_login(self):
-        with httmock.HTTMock(githubmock_request):
-            with patch('cauth.utils.userdetails'):
-                response = self.app.get('/login/github/index',
-                                        params={'username': 'user6',
-                                                'back': 'r/',
-                                                'password': 'userpass'})
-                self.assertEqual(response.status_int, 302)
-                parsed = urlparse.urlparse(response.headers['Location'])
-                parsed_qs = urlparse.parse_qs(parsed.query)
-                self.assertEqual('https', parsed.scheme)
-                self.assertEqual('github.com', parsed.netloc)
-                self.assertEqual('/login/oauth/authorize', parsed.path)
-                self.assertEqual(
-                    ['user:email, read:public_key, read:org'],
-                    parsed_qs.get('scope'))
-                self.assertEqual(
-                    ['http://tests.dom/auth/login/github/callback"'],
-                    parsed_qs.get('redirect_uri'))
-
     def test_json_github_login(self):
         with httmock.HTTMock(githubmock_request):
             with patch('cauth.utils.userdetails'):
