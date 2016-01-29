@@ -47,6 +47,9 @@ class AuthProtocolPlugin(object):
             msg = ("The %s authentication protocol "
                    "is not available" % self._config_section)
             raise AuthProtocolNotAvailableError(msg)
+        if self.conf.get('disabled', False):
+            msg = "%s is disabled" % self._config_section
+            raise AuthProtocolNotAvailableError(msg)
 
     @classmethod
     def get_args(cls):
