@@ -30,16 +30,19 @@ class IntrospectionController(RestController):
         return cauth.version
 
     def iter_auth_plugins(self):
-        for plugin in pkg_resources.iter_entry_points('cauth.authentication'):
-            plugin_name = plugin.name
+        active_methods = set(conf['auth_methods'])
+        pkgs = pkg_resources.iter_entry_points('cauth.authentication')
+        pkgs = set([x.name for x in pkgs])
+        plugins = active_methods.intersection(pkgs)
+        for plugin in plugins:
             try:
                 auth_plugin = driver.DriverManager(
                     namespace='cauth.authentication',
-                    name=plugin.name,
+                    name=plugin,
                     invoke_on_load=True,
                     invoke_args=(conf,)).driver
                 if auth_plugin:
-                    yield plugin_name
+                    yield plugin
             except base.AuthProtocolNotAvailableError:
                 pass
 
