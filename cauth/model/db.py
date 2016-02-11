@@ -16,13 +16,15 @@
 
 import string
 import random
+ 
+from sqlalchemy import Column, Integer, String
 
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 Session = scoped_session(sessionmaker())
+
 
 STATE_LEN = 16
 
@@ -61,3 +63,42 @@ def get_url(state):
 
 def reset():
     Session.query(state_mapping).delete()
+
+
+class auth_mapping(Base):
+    __tablename__ = 'auth_mapping'
+
+    cauth_id = Column(Integer, primary_key=True)
+    # The IDP auth endpoint should be unique
+    domain = Column(String)
+    # we cannot be sure every IdP will provide a numeric uid so go with String
+    external_id = Column(String)
+
+
+def get_or_create_authenticated_user(domain, external_id):
+    user = Session.query(auth_mapping).filter_by(domain=domain,
+                                                 external_id=external_id)
+    if user:
+        return user.first().cauth_id
+    else:
+        user = auth_mapping(domain=domain,
+                            external_id=external_id)
+        Session.add(user)
+        Session.commit()
+        return user.cauth_id
+
+
+def get_authenticated_user_by_cauth_id(cauth_id):
+    user = Session.query(auth_mapping).filter_by(cauth_id)
+    if user:
+        return {'cauth_id': user.first().cauth_id,
+                'domain': user.first().domain,
+                'external_id': user.first().external_id}
+    return None
+
+
+def delete_authenticated_user(cauth_id):
+    # Just here for completion as relogging will simply recreate the user
+    user = Session.query(auth_mapping).filter_by(cauth_id)
+    if user:
+        user.delete()
