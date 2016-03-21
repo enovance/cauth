@@ -23,7 +23,7 @@ from cauth.model.db import reset, Base, Session
 def create_from_conf():
     configs = dict(conf.sqlalchemy)
     url = configs.pop('url')
-    return create_engine(url, **configs)
+    return create_engine(url, pool_recycle=600, **configs)
 
 
 def init_model():

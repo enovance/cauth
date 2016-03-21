@@ -42,7 +42,7 @@ class state_mapping(Base):
 
     index = Column(Integer, primary_key=True)
     state = Column(String(STATE_LEN))
-    url = Column(String)
+    url = Column(String(1000))
 
 
 def put_url(url):
@@ -72,9 +72,9 @@ class auth_mapping(Base):
 
     cauth_id = Column(Integer, primary_key=True)
     # The IDP auth endpoint should be unique
-    domain = Column(String)
+    domain = Column(String(255))
     # we cannot be sure every IdP will provide a numeric uid so go with String
-    external_id = Column(String)
+    external_id = Column(String(255))
 
 
 def get_or_create_authenticated_user(domain, external_id):
