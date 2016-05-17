@@ -185,6 +185,16 @@ class GithubAuthPlugin(BaseGithubAuthPlugin):
             raise base.UnauthenticatedError(resp)
         ssh_keys = resp.json()
 
+        resp = requests.get("https://api.github.com/user/emails",
+                            headers={'Authorization': 'token ' + token})
+        if not resp.ok:
+            logger.error('Failed to get emails', resp)
+            raise base.UnauthenticatedError(resp)
+        emails = resp.json()
+        logger.info(str(emails))
+        # TODO: reuse emails now (register the primary one)
+        # [{u'verified': True, u'email': u'fabien.dot.boucher@gmail.com', u'primary': False}, {u'verified': False, u'email': u'fbo@wallix.com', u'primary': False}, {u'verified': False, u'email': u'fabien.boucher@wallix.com', u'primary': False}, {u'verified': True, u'email': u'fabien.boucher@enovance.com', u'primary': False}, {u'verified': True, u'email': u'fboucher@redhat.com', u'primary': True}, {u'verified': True, u'email': u'morucci@users.noreply.github.com', u'primary': False}]
+
         if not self.organization_allowed(token):
             raise base.UnauthenticatedError("Organization not allowed")
 
