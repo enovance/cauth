@@ -54,12 +54,13 @@ def pre_register_user(user):
         user['email'] = '%s@%s' % (user['login'], conf.app['cookie_domain'])
 
     udc = userdetails.UserDetailsCreator(conf)
-    udc.create_user(user)
+    return udc.create_user(user)
 
 
 def setup_response(user, back):
-    pre_register_user(user)
+    cauth_id = pre_register_user(user)
     ticket = create_ticket(uid=user['login'],
+                           cauth_id=cauth_id,
                            validuntil=(
                                time.time() + conf.app['cookie_period']))
     enc_ticket = urllib.quote_plus(ticket)
