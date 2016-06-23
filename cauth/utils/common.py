@@ -60,6 +60,7 @@ def pre_register_user(user):
 def setup_response(user, back):
     pre_register_user(user)
     ticket = create_ticket(uid=user['login'],
+                           eid=user.get('external_id'),
                            validuntil=(
                                time.time() + conf.app['cookie_period']))
     enc_ticket = urllib.quote_plus(ticket)
