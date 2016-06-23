@@ -59,7 +59,15 @@ def pre_register_user(user):
 
 def setup_response(user, back):
     pre_register_user(user)
+    # eid is the user numeric id
+    eid = user.get('external_id')
+    if not eid:
+        eid = 0
+    # eid is added to the cauth cookie so that the storyboard client can
+    # authenticate to storyboard_api.
+    # the eid is stored in browser local storage after authentication.
     ticket = create_ticket(uid=user['login'],
+                           eid=eid,
                            validuntil=(
                                time.time() + conf.app['cookie_period']))
     enc_ticket = urllib.quote_plus(ticket)
