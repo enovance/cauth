@@ -161,8 +161,7 @@ class dummy_conf():
                          'sn': 'sn',
                          'mail': 'mail', },
                      'github':
-                     {'top_domain': 'tests.dom',
-                      'auth_url': 'https://github.com/login/oauth/authorize',
+                     {'auth_url': 'https://github.com/login/oauth/authorize',
                       'redirect_uri':
                       'http://tests.dom/auth/login/github/callback"',
                       'client_id': 'XXX',
