@@ -27,7 +27,8 @@ from cauth.utils import common
 logger = logging.getLogger(__name__)
 
 
-OAUTH_PROVIDERS_PLUGINS = ['Github', ]
+OAUTH_PROVIDERS_PLUGINS = ['Github',
+                           'Google', ]
 
 
 class OAuth2Controller(object):
