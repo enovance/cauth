@@ -1,4 +1,5 @@
 -e git+https://github.com/redhat-cip/pysflib.git#egg=pysflib
+-e git+https://github.com/rohe/pyoidc#egg=pyoidc
 basicauth==0.3
 pecan==1.0.3
 mock==1.3.0
